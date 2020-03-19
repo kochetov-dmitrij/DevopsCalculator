@@ -28,4 +28,8 @@ public class MultiplyOperation implements Operation {
 		return first.multiply(second);
 	}
 
+	@Override
+	public char getSign() {
+		return '*';
+	}
 }

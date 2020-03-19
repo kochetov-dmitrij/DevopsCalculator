@@ -28,4 +28,8 @@ public class AddOperation implements Operation {
         return first.add(second);
     }
 
+    @Override
+    public char getSign() {
+        return '+';
+    }
 }

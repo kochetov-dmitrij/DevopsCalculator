@@ -37,6 +37,8 @@ public class Calculator {
     // The current number being entered
     private BigInteger currNumber = null;
 
+    private String lastRecord = null;
+
     /**
      * Appends a digit - what happens when a user presses a number key.
      *
@@ -51,6 +53,7 @@ public class Calculator {
         } else {
             currNumber = BigInteger.valueOf(digit);
         }
+        lastRecord = null;
     }
 
     public void add() {
@@ -94,11 +97,12 @@ public class Calculator {
             BigInteger a = lastNumber;
             BigInteger b = currNumber != null ? currNumber : lastNumber;
             lastNumber = operation.apply(a, b);
-            //todo
+            lastRecord = String.format("%d %c %d = %d", a, operation.getSign(), b, lastNumber);
 
         } else if (currNumber != null) {
             // Stash the currently edited number, so it's no longer editable
             lastNumber = currNumber;
+            lastRecord = null;
         }
         currNumber = null;
         operation = null;
@@ -108,6 +112,7 @@ public class Calculator {
      * Reset the calculator
      */
     public void clear() {
+        lastRecord = null;
         currNumber = null;
         lastNumber = ZERO;
         operation = null;
@@ -121,5 +126,9 @@ public class Calculator {
             return lastNumber.toString();
         }
         return currNumber.toString();
+    }
+
+    public String getLastRecord() {
+        return lastRecord;
     }
 }

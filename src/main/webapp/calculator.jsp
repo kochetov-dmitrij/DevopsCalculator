@@ -51,8 +51,7 @@
     </div>
     <div class="container">
         <h3>History</h3>
-        <div class="record">2+2=4</div>
-        <div class="record">2+3=5</div>
+        ${records}
     </div>
 </div>
 </div>

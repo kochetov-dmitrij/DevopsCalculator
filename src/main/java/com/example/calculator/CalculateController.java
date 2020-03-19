@@ -21,18 +21,19 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.ParameterizableViewController;
 
+import java.util.LinkedList;
+
 /**
  * @author GreenD
- *
  */
 public class CalculateController extends ParameterizableViewController {
 
-    // The calculator
+    private LinkedList<String> history = new LinkedList<>();
+    private int historyCounter = 1;
     private Calculator calculator;
 
     @Override
     protected ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
         char button = request.getParameter("button").charAt(0);
         if ((button >= '0') && (button <= '9')) {
             calculator.digit(Integer.parseInt("" + button));
@@ -61,10 +62,31 @@ public class CalculateController extends ParameterizableViewController {
 
         ModelAndView mav = super.handleRequestInternal(request, response);
         mav.addObject("displayAmount", calculator.getDisplayAmount());
+        appendRecord(calculator.getLastRecord());
+        mav.addObject("records", getHistory());
+
         return mav;
     }
 
     public void setCalculator(Calculator calculator) {
         this.calculator = calculator;
+    }
+
+    private String wrapRecord(String equation) {
+        return String.format("<div class=\"record\">%s</div>", equation);
+    }
+
+    private void appendRecord(String equation) {
+        if (equation == null) return;
+        if (history.size() == 5) history.removeLast();
+        history.add(0, String.format("%d) %s", historyCounter++, equation));
+    }
+
+    private String getHistory() {
+        StringBuilder sb = new StringBuilder();
+        for (String s : history) {
+            sb.append(wrapRecord(s));
+        }
+        return sb.toString();
     }
 }

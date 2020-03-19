@@ -28,4 +28,8 @@ public class SubtractOperation implements Operation {
 		return first.subtract(second);
 	}
 
+	@Override
+	public char getSign() {
+		return '-';
+	}
 }

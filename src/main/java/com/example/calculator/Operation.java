@@ -24,5 +24,5 @@ import java.math.BigInteger;
 public interface Operation {
 
     BigInteger apply(BigInteger first, BigInteger second);
-
+    char getSign();
 }

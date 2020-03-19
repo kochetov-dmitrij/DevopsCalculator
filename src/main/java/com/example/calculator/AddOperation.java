@@ -17,10 +17,6 @@ package com.example.calculator;
 
 import java.math.BigInteger;
 
-/**
- * @author GreenD
- *
- */
 public class AddOperation implements Operation {
 
     @Override

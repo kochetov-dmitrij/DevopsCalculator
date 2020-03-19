@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2010 David Green
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,11 +17,6 @@ package com.example.calculator;
 
 import java.math.BigInteger;
 
-/**
- * The calculator.
- *
- * @author GreenD
- */
 public class Calculator {
 
     private static final BigInteger TEN = new BigInteger("10");

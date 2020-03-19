@@ -15,13 +15,11 @@
  */
 package com.example.calculator;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.ParameterizableViewController;
 
-import java.util.LinkedList;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.sql.*;
 
 /**
@@ -29,9 +27,9 @@ import java.sql.*;
  */
 public class CalculateController extends ParameterizableViewController {
 
-    private LinkedList<String> history = new LinkedList<>();
     private int historyCounter = 1;
     private Calculator calculator;
+    private Connection db;
 
     @Override
     protected ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -71,23 +69,73 @@ public class CalculateController extends ParameterizableViewController {
 
     public void setCalculator(Calculator calculator) {
         this.calculator = calculator;
+
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            System.out.print("org.postgresql.Driver not found");
+            return;
+        }
+        try {
+            db = DriverManager.getConnection(
+                    "jdbc:postgresql:postgres",
+                    "admin",
+                    "pass");
+        } catch (SQLException e) {
+            System.out.print("SQL exception\n" + e.getMessage());
+        }
     }
 
     private String wrapRecord(String equation) {
         return String.format("<div class=\"record\">%s</div>", equation);
     }
 
-    private void appendRecord(String equation) {
-        if (equation == null) return;
-        if (history.size() == 5) history.removeLast();
-        history.add(0, String.format("%d) %s", historyCounter++, equation));
+    private String getHistory() {
+        try {
+            PreparedStatement pst = db.prepareStatement("SELECT record FROM history ORDER BY ts DESC");
+            ResultSet rs = pst.executeQuery();
+            StringBuilder sb = new StringBuilder();
+
+            while (rs.next()) {
+                sb.append(wrapRecord(rs.getString(1)));
+            }
+            return sb.toString();
+        } catch (SQLException e) {
+            System.out.print("SQL exception. Could not append.\n" + e.getMessage());
+            return "";
+        }
     }
 
-    private String getHistory() {
-        StringBuilder sb = new StringBuilder();
-        for (String s : history) {
-            sb.append(wrapRecord(s));
+    private void appendRecord(String equation) {
+        if (equation == null) return;
+
+        try {
+            PreparedStatement pst;
+            ResultSet rs;
+
+            pst = db.prepareStatement("SELECT COUNT(*) FROM history");
+            rs = pst.executeQuery();
+            rs.next();
+            int length = rs.getInt(1);
+
+            if (length == 5) {
+                pst = db.prepareStatement("SELECT ts FROM history ORDER BY ts ASC LIMIT 1");
+                rs = pst.executeQuery();
+                rs.next();
+                Timestamp ts = rs.getTimestamp(1);
+
+                pst = db.prepareStatement("DELETE FROM history WHERE ts = (?)");
+                pst.setTimestamp(1, ts);
+                pst.executeUpdate();
+            }
+
+            pst = db.prepareStatement("INSERT INTO history(ts, record) VALUES(?, ?)");
+            pst.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
+            pst.setString(2, String.format("%d) %s", historyCounter++, equation));
+            pst.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.print("SQL exception. Could not append.\n" + e.getMessage());
         }
-        return sb.toString();
     }
 }

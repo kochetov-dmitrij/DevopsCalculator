@@ -25,33 +25,25 @@ import java.math.BigInteger;
 public class Calculator {
 
     private static final BigInteger TEN = new BigInteger("10");
-
     private static final BigInteger ZERO = new BigInteger("0");
 
-    // The last number, before operator
-    private BigInteger lastNumber = ZERO;
-
-    // The operation we'll apply
+    private BigInteger op1 = ZERO;
+    private BigInteger op2 = null;
     private Operation operation = null;
-
-    // The current number being entered
-    private BigInteger currNumber = null;
 
     private String lastRecord = null;
 
     /**
      * Appends a digit - what happens when a user presses a number key.
-     *
-     * @throws IllegalArgumentException
      */
     public void digit(int digit) {
         if ((digit < 0) || (digit > 9)) {
             throw new IllegalArgumentException("Invalid digit: " + digit);
         }
-        if (currNumber != null) {
-            currNumber = currNumber.multiply(TEN).add(BigInteger.valueOf(digit));
+        if (op2 != null) {
+            op2 = op2.multiply(TEN).add(BigInteger.valueOf(digit));
         } else {
-            currNumber = BigInteger.valueOf(digit);
+            op2 = BigInteger.valueOf(digit);
         }
         lastRecord = null;
     }
@@ -94,17 +86,18 @@ public class Calculator {
      */
     public void equals() {
         if (operation != null) {
-            BigInteger a = lastNumber;
-            BigInteger b = currNumber != null ? currNumber : lastNumber;
-            lastNumber = operation.apply(a, b);
-            lastRecord = String.format("%d %c %d = %d", a, operation.getSign(), b, lastNumber);
-
-        } else if (currNumber != null) {
+            BigInteger a = op1;
+            BigInteger b = op2 != null ? op2 : op1;
+            op1 = operation.apply(a, b);
+            lastRecord = String.format("%d %c %d = %d", a, operation.getSign(), b, op1);
+        } else if (op2 != null) {
             // Stash the currently edited number, so it's no longer editable
-            lastNumber = currNumber;
+            op1 = op2;
+            lastRecord = null;
+        } else {
             lastRecord = null;
         }
-        currNumber = null;
+        op2 = null;
         operation = null;
     }
 
@@ -113,8 +106,8 @@ public class Calculator {
      */
     public void clear() {
         lastRecord = null;
-        currNumber = null;
-        lastNumber = ZERO;
+        op2 = null;
+        op1 = ZERO;
         operation = null;
     }
 
@@ -122,10 +115,10 @@ public class Calculator {
      * @return The amount to display on the calculator screen
      */
     public String getDisplayAmount() {
-        if (currNumber == null) {
-            return lastNumber.toString();
+        if (op2 == null) {
+            return op1.toString();
         }
-        return currNumber.toString();
+        return op2.toString();
     }
 
     public String getLastRecord() {

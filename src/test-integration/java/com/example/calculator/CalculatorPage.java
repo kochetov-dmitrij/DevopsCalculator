@@ -29,7 +29,7 @@ public class CalculatorPage {
 	// The WebDriver
 	private WebDriver webDriver;
 	
-	public CalculatorPage( WebDriver webDriver ) {
+	CalculatorPage( WebDriver webDriver ) {
 		this.webDriver = webDriver;
 	}
 	

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2010 David Green
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,24 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.calculator;
+package com.devops.calculator;
 
 import java.math.BigInteger;
 
 /**
  * @author GreenD
+ *
  */
-public class DivideOperation implements Operation {
+public class SubtractOperation implements Operation {
 
     @Override
     public BigInteger apply(BigInteger first, BigInteger second) {
-        if (second.floatValue() == 0) return BigInteger.valueOf(0);
-
-        return first.divide(second);
+        return first.subtract(second);
     }
 
     @Override
     public char getSign() {
-        return '/';
+        return '-';
     }
 }

@@ -1,7 +1,7 @@
-package com.example.calculator;
+package com.devops.calculator_it;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.*;
@@ -16,10 +16,10 @@ import static org.junit.Assert.fail;
  */
 public class PostgresIT {
 
-    private Connection db;
+    private static Connection db;
 
-    @Before
-    public void connectPostgres() {
+    @BeforeClass
+    public static void connectPostgres() {
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -35,8 +35,8 @@ public class PostgresIT {
         }
     }
 
-    @After
-    public void closePostgres() {
+    @AfterClass
+    public static void closePostgres() {
         try {
             db.close();
         } catch (SQLException e) {
@@ -47,7 +47,7 @@ public class PostgresIT {
     @Test
     public void testDropTestTable() {
         try {
-            PreparedStatement pst = db.prepareStatement("DROP TABLE test");
+            PreparedStatement pst = db.prepareStatement("DROP TABLE IF EXISTS test");
             pst.executeUpdate();
         } catch (SQLException e) {
             fail("Could not drop Postgres table." + e.getMessage());

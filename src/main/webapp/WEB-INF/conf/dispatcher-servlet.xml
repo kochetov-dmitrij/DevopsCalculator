@@ -25,7 +25,7 @@
 		<property name="viewName" value="calculator.jsp"/>
 	</bean>
 	
-	<bean id="calculateController" class="com.example.calculator.CalculateController">
+	<bean id="calculateController" class="com.devops.calculator.CalculateController">
 		<property name="viewName" value="calculator.jsp"/>
 		<property name="calculator" ref="calculator"/>
 	</bean>

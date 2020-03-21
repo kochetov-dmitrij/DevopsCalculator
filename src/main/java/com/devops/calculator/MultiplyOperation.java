@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2010 David Green
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,19 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.calculator;
+package com.devops.calculator;
 
 import java.math.BigInteger;
 
-public class AddOperation implements Operation {
+/**
+ * @author GreenD
+ *
+ */
+public class MultiplyOperation implements Operation {
 
     @Override
     public BigInteger apply(BigInteger first, BigInteger second) {
-        return first.add(second);
+        return first.multiply(second);
     }
 
     @Override
     public char getSign() {
-        return '+';
+        return '*';
     }
 }

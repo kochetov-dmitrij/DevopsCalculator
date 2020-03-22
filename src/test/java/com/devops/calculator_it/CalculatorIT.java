@@ -38,7 +38,7 @@ public class CalculatorIT {
     @BeforeClass
     public static void openWebDriver() {
         testServerPort = System.getProperty("test.server.port", "8080");
-        System.setProperty("webdriver.gecko.driver", "/webdriver/geckodriver");
+//        System.setProperty("webdriver.gecko.driver", "/webdriver/geckodriver");
         FirefoxBinary firefoxBinary = new FirefoxBinary();
         firefoxBinary.addCommandLineOptions("--headless");
         FirefoxOptions firefoxOptions = new FirefoxOptions();

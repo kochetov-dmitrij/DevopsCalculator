@@ -3,6 +3,8 @@ package com.devops.calculator_it;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
 import java.sql.*;
 
@@ -14,6 +16,7 @@ import static org.junit.Assert.fail;
  *
  * @author GreenD
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PostgresIT {
 
     private static Connection db;
@@ -45,7 +48,7 @@ public class PostgresIT {
     }
 
     @Test
-    public void testDropTestTable() {
+    public void test1DropTestTable() {
         try {
             PreparedStatement pst = db.prepareStatement("DROP TABLE IF EXISTS test");
             pst.executeUpdate();
@@ -55,7 +58,7 @@ public class PostgresIT {
     }
 
     @Test
-    public void testCreateTestTable() {
+    public void test2CreateTestTable() {
         try {
             PreparedStatement pst = db.prepareStatement(
                     "CREATE TABLE test (ts TIMESTAMP PRIMARY KEY, record VARCHAR (50) NOT NULL)");
@@ -66,7 +69,7 @@ public class PostgresIT {
     }
 
     @Test
-    public void testInsert() {
+    public void test3Insert() {
         try {
             PreparedStatement pst = db.prepareStatement("INSERT INTO test(ts, record) VALUES(?, ?)");
             pst.setTimestamp(1, new Timestamp(641423311));

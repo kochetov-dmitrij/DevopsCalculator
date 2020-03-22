@@ -4,11 +4,11 @@
   vars:
     tomcat_apps_path: /var/lib/tomcat8/webapps
   vars_files:
-    - vars.yml
+  - vars.yml
 
   pre_tasks:
-    - name: Update apt cache if needed.
-      apt: update_cache=yes cache_valid_time=3600
+  - name: Update apt cache if needed.
+    apt: update_cache=yes cache_valid_time=3600
 
   tasks:
   - name: Copy public key
@@ -22,6 +22,8 @@
     apt: name=tomcat8 state=present
   - name: Ensure Tomcat 8 is started and enabled on boot
     service: name=tomcat8 state=started enabled=yes
+  - name: Remove default Tomcat ROOT webapp
+    file: path="{{tomcat_apps_path}}/ROOT" state=absent
   - name: Install PostgreSQL
     apt: name=postgresql,python3-dev,python3-psycopg2 state=present
   - name: Ensure PostgreSQL is started and enabled on boot

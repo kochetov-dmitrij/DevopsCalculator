@@ -7,6 +7,8 @@
 /.classpath
 /.tomcatplugin
 /.idea
+.vagrant/
+data/
 
 # Logs and databases #
 ######################

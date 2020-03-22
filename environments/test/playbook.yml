@@ -1,0 +1,28 @@
+---
+- hosts: all
+  become: true
+  vars_files:
+  - vars.yml
+
+  pre_tasks:
+  - name: Update apt cache if needed.
+    apt: update_cache=yes cache_valid_time=3600
+
+  tasks:
+  - name: Copy public key
+    copy: src=~/.ssh/id_rsa_devops_course.pub dest=~vagrant/.ssh/me.pub
+  - shell: cat ~vagrant/.ssh/me.pub
+    register: public_key
+  - lineinfile:
+      path: ~vagrant/.ssh/authorized_keys
+      line: "{{public_key.stdout}}"
+
+  - name: Install Java8
+    apt: name=openjdk-8-jdk state=latest
+
+  - name: Copy app sources
+    copy: src={{item.src}} dest={{item.dest}}
+    with_items:
+      - { src: '~/devops_course/DevopsCalculator/DevopsCalculatorIT', dest: '/etc/mesos/containerizers' }
+      - { src: 'another_file', dest: '/etc/somewhere' }
+      - { src: 'dynamic', dest: '{{ var_path }}' }

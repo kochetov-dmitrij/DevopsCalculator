@@ -9,6 +9,7 @@
 /.idea
 .vagrant/
 data/
+*.iml
 
 # Logs and databases #
 ######################

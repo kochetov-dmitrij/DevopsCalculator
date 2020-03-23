@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: true
+  vars_files:
+  - vars.yml
+
+  roles:
+  - role: ../roles/apt_update
+  - role: ../roles/public_key
+  - role: ../roles/jdk
+  - role: ../roles/tomcat
+  - role: ../roles/postgresql
+  - role: ../roles/selenium_firefox

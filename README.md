@@ -9,11 +9,18 @@
 - Java (maven)
 - PostgreSQL (for storing history)
 
+#### How to run:
+```
+./mvnw clean package 
+./mvnw failsafe:integration-test -DskipTests=false
+sudo cp <project_dir>/target/calculator-web.war /var/lib/tomcat8/webapps/ROOT.war 
+```
+
 #### Tests:
 - Unit tests: 20
 - Integration tests:
     - 4 for PostgreSQL
-    - 6 for testing frontend with Selenium 
+    - 6 for testing frontend with Selenium
 
 #### Provides environments (vagrant/ansible):
 - dev

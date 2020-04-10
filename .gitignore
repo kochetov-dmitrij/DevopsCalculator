@@ -10,6 +10,7 @@
 .vagrant/
 data/
 *.iml
+calculator-web.iml
 
 # Logs and databases #
 ######################

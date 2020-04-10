@@ -60,6 +60,12 @@
         </dependency>
 
         <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+        <dependency>
             <scope>provided</scope>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>

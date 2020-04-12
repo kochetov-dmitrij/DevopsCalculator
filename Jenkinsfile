@@ -30,6 +30,10 @@ pipeline {
         stage('Cancel old builds') {
             steps {
                 script {
+                    if (env.BRANCH_NAME == 'master' && env.BUILD_NUMBER.toInteger() == 1) {
+                        currentBuild.result = "NOT_BUILT"
+                        error("First master build, nothing to release")
+                    }
                     cancelPreviousBuilds()
                     if (env.BRANCH_NAME != 'master' && sh(script: 'git rev-parse origin/'+env.BRANCH_NAME, returnStdout: true) == sh(script: 'git rev-parse origin/master', returnStdout: true)) {
                         currentBuild.result = "NOT_BUILT"

@@ -1,9 +1,39 @@
+@NonCPS
+def cancelPreviousBuilds() {
+    def jobName = env.JOB_NAME
+    def buildNumber = env.BUILD_NUMBER.toInteger()
+    def currentJob = Jenkins.instance.getItemByFullName(jobName)
+
+    /* Iterating over the builds for specific job */
+    for (def build : currentJob.builds) {
+        def exec = build.getExecutor()
+        def sameBranch = build.parent.toString().endsWith(currentJob.name + "]")
+        /* If there is a build that is currently running and it's not current build */
+        if (sameBranch && build.isBuilding() && build.number.toInteger() != buildNumber && exec != null) {
+            /* Then stop it */
+            exec.interrupt(
+                    Result.ABORTED,
+                    new CauseOfInterruption.UserInterruption("Aborted by #" + buildNumber)
+                )
+            println("Aborted previously running build #${build.number}")  
+            
+        }
+    }
+}
+
 def master_hash
 
 pipeline {
     agent any
     
     stages {
+        stage('Cancel old builds') {
+            steps {
+                script {
+                    cancelPreviousBuilds()
+                }
+            }
+        }
         stage('Pull from master') {
             when{
                 branch 'ready/*'
@@ -48,7 +78,7 @@ pipeline {
                 branch 'ready/*'
             }
             steps {
-                input "Do manual testing if needed. Release and push to master?"
+                input "Do manual testing if needed.\nRelease and push to master?"
                 
                 sh '''
                     git fetch --no-tags --progress http://192.168.11.10/gitlab/devopser/devopscalculator +refs/heads/master:refs/remotes/origin/master 

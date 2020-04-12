@@ -10,7 +10,6 @@ pipeline {
             }
             steps {
                 script {
-                
                     sh '''
                         git --version
                         git rev-parse --is-inside-work-tree
@@ -22,7 +21,7 @@ pipeline {
                     '''
                     master_hash = sh(script: 'git rev-parse origin/master', returnStdout: true).trim()
                     sh '''
-                        git merge --squash --ff-only origin/ready/123
+                        git merge --squash --ff-only origin/'''+env.BRANCH_NAME+'''
                         git add -A
                         git commit --no-edit
                     '''
@@ -56,7 +55,7 @@ pipeline {
                     master_hash_new=`git rev-parse origin/master`
                     if [ '''+master_hash+''' != $master_hash_new ] ; then echo "Someone merged to master. Pull master changes and try again" && exit 128 ; fi
                     git push origin master
-                    git push origin --delete ready/123
+                    git push origin --delete '''+env.BRANCH_NAME+'''
                     git reset --hard
                     git clean -fdx
                 '''

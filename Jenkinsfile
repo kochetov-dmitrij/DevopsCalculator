@@ -31,6 +31,10 @@ pipeline {
             steps {
                 script {
                     cancelPreviousBuilds()
+                    if (env.BRANCH_NAME != 'master' && sh(script: 'git rev-parse origin/'+env.BRANCH_NAME, returnStdout: true) == sh(script: 'git rev-parse origin/master', returnStdout: true)) {
+                        currentBuild.result = "NOT_BUILT"
+                        error("The branch matches master")
+                    }
                 }
             }
         }

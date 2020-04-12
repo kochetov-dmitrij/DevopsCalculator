@@ -1,9 +1,13 @@
-- name: Install Tomcat 8
+- name: Install Selenium (firefox)
   apt: name=firefox,xvfb state=present
 - name: Downloading geckon driver
   shell: |
-    chdir /tmp
-    wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz
-    tar -xvzf geckodriver*
-    chmod +x geckodriver
-    mv geckodriver /usr/local/bin/
+    if [ ! -f "/usr/local/bin/geckodriver" ]; then
+        cd /tmp
+        wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz
+        tar -xvzf geckodriver-v0.26.0-linux64.tar.gz
+        chmod +x geckodriver
+        mv geckodriver /usr/local/bin/
+    else
+        echo "Driver is already in PATH"
+    fi

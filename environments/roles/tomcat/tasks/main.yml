@@ -1,6 +1,7 @@
 - name: Install Tomcat 8
   apt: name=tomcat8 state=present
 - name: Ensure Tomcat 8 is started and enabled on boot
-  service: name=tomcat8 state=started enabled=yes
+  service: name=tomcat8 state=restarted enabled=yes
+  ignore_errors: true
 - name: Remove default Tomcat ROOT webapp
   file: path="{{tomcat_apps_path}}/ROOT" state=absent

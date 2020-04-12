@@ -16,7 +16,6 @@ def cancelPreviousBuilds() {
                     new CauseOfInterruption.UserInterruption("Aborted by #" + buildNumber)
                 )
             println("Aborted previously running build #${build.number}")  
-            
         }
     }
 }
@@ -69,6 +68,12 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
+                script {
+                    sh '''
+                        whoami
+                        docker build -t "'''+env.BRANCH_NAME+'''/env-build" ./environments/dev
+                    '''
+                }
             }
         }
         stage('Test') {
@@ -76,7 +81,7 @@ pipeline {
                 echo 'Testing..'
             }
         }
-        stage('Deploy') {
+        stage('Deploy to stage') {
             steps {
                 echo 'Deploying....'
             }

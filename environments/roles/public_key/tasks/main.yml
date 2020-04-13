@@ -1,5 +1,3 @@
-- name: Copy public key
-  copy: src=~/.ssh/id_rsa_devops_course.pub dest=~root/.ssh/me.pub
 - shell: cat ~root/.ssh/me.pub
   register: public_key
 - lineinfile:

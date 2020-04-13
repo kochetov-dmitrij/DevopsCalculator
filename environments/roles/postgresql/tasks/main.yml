@@ -12,7 +12,7 @@
 - name: Create user, grant privs
   become: true
   become_user: postgres
-  postgresql_user: name=admin password=pass role_attr_flags=CREATEDB,NOSUPERUSER
+  postgresql_user: name=admin password="1a1dc91c907325c69271ddf0c944bc72" encrypted=yes role_attr_flags=CREATEDB,NOSUPERUSER
 - name: Create 'history' table
   become_user: postgres
   postgresql_table:

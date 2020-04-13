@@ -21,6 +21,7 @@ def cancelPreviousBuilds() {
 }
 
 def master_hash
+def build_hash
 
 pipeline {
     agent any
@@ -62,40 +63,51 @@ pipeline {
                         git add -A
                         git commit --no-edit
                     '''
+                    build_hash = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
                 }
             }
         }
         stage('Build') {
             steps {
-                echo 'Building..'
+                echo 'Building...'
                 script {
                     label = env.BRANCH_NAME + "/env-build"
                     sh '''
-                        cp ~jenkins/.ssh/id_rsa.pub ./environments/dev/
+                        cp /ssh/id_rsa ./environments/dev/
+                        cp /ssh/id_rsa.pub ./environments/dev/
+                        chmod 700 ./environments/dev/id_rsa
                         docker build -t '''+label+''' ./environments/dev
                     '''
-                    container_id = sh(script: 'docker run -d -v data:/temp/ -p 0:8080 '+label, returnStdout: true).trim()
+                    container_id = sh(script: 'docker run -d -v data:/temp/ -p 15000-15999:8080 '+label, returnStdout: true).trim()
                     container_ip = sh(script: 'docker inspect -f "{{ .NetworkSettings.IPAddress }}" '+container_id, returnStdout: true).trim()
                     container_port = sh(script: '''docker inspect -f '{{ (index (index .NetworkSettings.Ports "8080/tcp") 0).HostPort }}' '''+container_id, returnStdout: true).trim()
                     echo container_id
                     echo container_ip
                     echo container_port
-                    input "ok?"
+                    
                     sh '''
-                        ansible-playbook --private-key ~jenkins/.ssh/id_rsa -i '''+container_ip+''', ./environments/dev/playbook.yml
+                        export ANSIBLE_HOST_KEY_CHECKING=False
+                        ansible-playbook --private-key ./environments/dev/id_rsa -u root -i '''+container_ip+''', ./environments/dev/playbook.yml
+                        
+                        docker cp ./mvnw '''+container_id+''':tmp
+                        docker cp ./.mvn/ '''+container_id+''':tmp
+                        docker cp ./pom.xml '''+container_id+''':tmp
+                        docker cp ./src/ '''+container_id+''':tmp
+                        docker exec '''+container_id+''' bash -c 'cd /tmp/ ; ./mvnw clean package'
+                        docker container cp '''+container_id+''':/tmp/target/calculator-web-*.war app_'''+build_hash+''' 
                     '''
                 }
-                
             }
         }
         stage('Test') {
             steps {
-                echo 'Testing..'
+                echo 'Testing...'
             }
         }
         stage('Deploy to stage') {
             steps {
-                echo 'Deploying....'
+                echo 'Deploying to stage...'
+                
             }
         }
         stage('Push to master') {
@@ -105,21 +117,13 @@ pipeline {
             steps {
                 input "Do manual testing if needed.\nRelease and push to master?"
                 
-                sh '''
-                    git fetch --no-tags --progress http://192.168.11.10/gitlab/devopser/devopscalculator +refs/heads/master:refs/remotes/origin/master 
-                    master_hash_new=`git rev-parse origin/master`
-                    if [ '''+master_hash+''' != $master_hash_new ] ; then echo "Someone merged to master. Pull master changes and try again" && exit 128 ; fi
-                    git push origin master
-                    git push origin --delete '''+env.BRANCH_NAME+'''
-                    git reset --hard
-                    git clean -fdx
-                '''
             }
         }
     }
     
     post {
         always {
+            input "Do ee?"
             sh '''
                 running_containers=`docker ps -a | grep '''+env.BRANCH_NAME+'''/* | awk '{print $1}'`
                 echo $running_containers

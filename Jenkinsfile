@@ -69,11 +69,23 @@ pipeline {
             steps {
                 echo 'Building..'
                 script {
+                    label = env.BRANCH_NAME + "/env-build"
                     sh '''
-                        whoami
-                        docker build -t "'''+env.BRANCH_NAME+'''/env-build" ./environments/dev
+                        cp ~jenkins/.ssh/id_rsa.pub ./environments/dev/
+                        docker build -t '''+label+''' ./environments/dev
+                    '''
+                    container_id = sh(script: 'docker run -d -v data:/temp/ -p 0:8080 '+label, returnStdout: true).trim()
+                    container_ip = sh(script: 'docker inspect -f "{{ .NetworkSettings.IPAddress }}" '+container_id, returnStdout: true).trim()
+                    container_port = sh(script: '''docker inspect -f '{{ (index (index .NetworkSettings.Ports "8080/tcp") 0).HostPort }}' '''+container_id, returnStdout: true).trim()
+                    echo container_id
+                    echo container_ip
+                    echo container_port
+                    input "ok?"
+                    sh '''
+                        ansible-playbook --private-key ~jenkins/.ssh/id_rsa -i '''+container_ip+''', ./environments/dev/playbook.yml
                     '''
                 }
+                
             }
         }
         stage('Test') {
@@ -103,6 +115,19 @@ pipeline {
                     git clean -fdx
                 '''
             }
+        }
+    }
+    
+    post {
+        always {
+            sh '''
+                running_containers=`docker ps -a | grep '''+env.BRANCH_NAME+'''/* | awk '{print $1}'`
+                echo $running_containers
+                if [ ! -z "$running_containers" ] ; then
+                    docker stop $running_containers
+                    docker rm $running_containers
+                fi
+            '''
         }
     }
 }

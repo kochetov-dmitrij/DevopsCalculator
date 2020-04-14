@@ -7,13 +7,11 @@ old_container=`docker ps -a | grep $label | awk '{print $1}'`
 if [ ! -z "$old_container" ] ; then docker rm -f $old_container ; fi
 
 docker build -t $label ./environments/dev
-container_id=`docker run -d -v data:/temp/ -p 16000:8080 $label`
+container_id=`docker run -d -v data:/temp/ -p 9024:22 -p 16000:8080 $label`
 container_ip=`docker inspect -f "{{ .NetworkSettings.IPAddress }}" $container_id`
 
-echo "Container IP: $container_ip"
-
 export ANSIBLE_HOST_KEY_CHECKING=False
-ansible-playbook --private-key ./environments/dev/id_rsa -u root -i $container_ip, ./environments/dev/playbook.yml
+ansible-playbook -i local_inventory.yml -k ./environments/dev/playbook.yml
 docker cp ./mvnw $container_id:tmp
 docker cp ./.mvn/ $container_id:tmp
 docker cp ./pom.xml $container_id:tmp

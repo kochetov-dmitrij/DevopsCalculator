@@ -107,6 +107,11 @@ pipeline {
                         docker cp ./src/ '''+container_id_build+''':tmp
                         docker exec '''+container_id_build+''' bash -c 'cd /tmp/ ; ./mvnw clean package ; cp target/calculator-web-*.war ROOT.war'
                         docker container cp '''+container_id_build+''':/tmp/ROOT.war ./ROOT.war
+                        docker container cp '''+container_id_build+''':/tmp/target/surefire-reports/ ./surefire-reports/
+                    '''
+                    junit '**/surefire-reports/*.xml'
+                    sh '''
+                        rm -r ./surefire-reports/
                     '''
                 }
             }
@@ -120,6 +125,11 @@ pipeline {
                 script {
                     sh '''
                         docker exec '''+container_id_build+''' bash -c 'cd /tmp/ ; ./mvnw failsafe:integration-test -DskipTests=false'
+                        docker container cp '''+container_id_build+''':/tmp/target/failsafe-reports/ ./failsafe-reports/
+                    '''
+                    junit '**/failsafe-reports/*.xml'
+                    sh '''
+                        rm -r ./failsafe-reports/
                     '''
                 }
             }

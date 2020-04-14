@@ -191,11 +191,13 @@ pipeline {
                     echo "New tag $NEW_TAG"
                     git tag -a -m "Merged from '''+env.BRANCH_NAME+''' feature branch" $NEW_TAG
                     
-                    curl -u admin:sHMHY6iZjh -X PUT "http://localhost:8022/artifactory/$NEW_TAG/$build_hash/ROOT.war" -T ./ROOT.war
+                    echo "Pushing .war to Artifactory"
+                    curl -u admin:sHMHY6iZjh -X PUT "http://localhost:8022/artifactory/generic-local/$NEW_TAG/ROOT.war" -T ./ROOT.war
                     
+                    echo "Pushing env-prod to Artifactory"
                     docker container commit '''+container_id_stage+''' '''+env.BRANCH_NAME+'''/env-prod
                     docker save '''+env.BRANCH_NAME+'''/env-prod -o env-prod.tar
-                    curl -u admin:sHMHY6iZjh -X PUT "http://localhost:8022/artifactory/$NEW_TAG/$build_hash/env-prod.tar" -T ./env-prod.tar
+                    curl -u admin:sHMHY6iZjh -X PUT "http://localhost:8022/artifactory/generic-local/$NEW_TAG/env-prod.tar" -T ./env-prod.tar
                     
                     git push --follow-tags origin master
                     git push origin --delete '''+env.BRANCH_NAME+'''

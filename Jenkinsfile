@@ -169,7 +169,7 @@ pipeline {
                 branch 'ready/*'
             }
             steps {
-                input "Do manual testing if needed.\nhttp://localhost:"+container_port+"\nRelease and push to master?"
+                input "Do manual testing if needed. \nhttp://localhost:"+container_port+" \nRelease and push to master?"
                 sh '''#!/bin/bash
                     git fetch --no-tags --progress http://192.168.11.10/gitlab/devopser/devopscalculator +refs/heads/master:refs/remotes/origin/master 
                     master_hash_new=`git rev-parse origin/master`

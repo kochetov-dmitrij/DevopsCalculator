@@ -80,7 +80,7 @@ public class CalculateController extends ParameterizableViewController {
             db = DriverManager.getConnection(
                     "jdbc:postgresql:postgres",
                     "admin",
-                    "pass");
+                    "1a1dc91c907325c69271ddf0c944bc72");
         } catch (SQLException e) {
             System.out.print("SQL exception\n" + e.getMessage());
         }

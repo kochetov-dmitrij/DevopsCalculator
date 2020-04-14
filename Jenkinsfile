@@ -43,13 +43,13 @@ pipeline {
                         error("The branch matches master")
                     }
                     sh '''
-                        old_container=`docker ps -a | grep '''+env.BRANCH_NAME+'''/* | awk '{print $1}'`
+                        old_container=`docker ps -a | grep '''+env.BRANCH_NAME+''' | awk '{print $1}'`
                         if [ ! -z "$old_container" ] ; then docker rm -f $old_container ; fi
                     '''
                 }
             }
         }
-        stage('Pull from master') {
+        stage('Descendant of master?') {
             when{
                 branch 'ready/*'
             }
@@ -76,7 +76,7 @@ pipeline {
                 }
             }
         }
-        stage('Build') {
+        stage('Commit stage') {
             when{
                 branch 'ready/*'
             }
@@ -111,7 +111,7 @@ pipeline {
                 }
             }
         }
-        stage('Test') {
+        stage('Acceptance testing') {
             when{
                 branch 'ready/*'
             }
@@ -148,22 +148,9 @@ pipeline {
                     
                     sh '''
                         export ANSIBLE_HOST_KEY_CHECKING=False
-                        ansible-playbook --private-key ./environments/dev/id_rsa -u root -i '''+container_ip+''', ./environments/dev/playbook.yml
+                        ansible-playbook --private-key ./environments/prod/id_rsa -u root -i '''+container_ip+''', ./environments/prod/playbook.yml
                         docker cp ./ROOT.war '''+container_id_stage+''':/var/lib/tomcat8/webapps/ROOT.war
                     '''
-                }
-            }
-        }
-        stage('Deploy to prod') {
-            when{
-                branch 'master'
-            }
-            steps {
-                input "dasdasdasasdadse and push to master?"
-                echo 'Deploying to prod...'
-                
-                script {
-                    label = env.BRANCH_NAME + "/env-prod"
                 }
             }
         }
@@ -194,11 +181,6 @@ pipeline {
                     echo "Pushing .war to Artifactory"
                     curl -u admin:sHMHY6iZjh -X PUT "http://localhost:8022/artifactory/generic-local/$NEW_TAG/ROOT.war" -T ./ROOT.war
                     
-                    echo "Pushing env-prod to Artifactory"
-                    docker container commit '''+container_id_stage+''' '''+env.BRANCH_NAME+'''/env-prod
-                    docker save '''+env.BRANCH_NAME+'''/env-prod -o env-prod.tar
-                    curl -u admin:sHMHY6iZjh -X PUT "http://localhost:8022/artifactory/generic-local/$NEW_TAG/env-prod.tar" -T ./env-prod.tar
-                    
                     git push --follow-tags origin master
                     git push origin --delete '''+env.BRANCH_NAME+'''
                     git reset --hard
@@ -206,12 +188,46 @@ pipeline {
                 '''
             }
         }
+        stage('Deploy to prod') {
+            when{
+                branch 'master'
+            }
+            steps {
+                echo 'Deploying to prod...'
+                script {
+                    label = "master/env-prod"
+                    sh '''
+                        git fetch --tags
+                        tag=`git describe --abbrev=0`
+                        echo Tag = $tag
+                        curl -u admin:sHMHY6iZjh -X GET "http://localhost:8022/artifactory/generic-local/$tag/ROOT.war" -o ./ROOT.war
+                        
+                        cp /ssh/id_rsa ./environments/prod/
+                        cp /ssh/id_rsa.pub ./environments/prod/
+                        chmod 700 ./environments/prod/id_rsa
+                        docker build -t '''+label+''' ./environments/prod
+                    '''
+                    
+                    container_id_prod = sh(script: 'docker run -d -v data:/temp/ -p 15900:8080 '+label, returnStdout: true).trim()
+                    container_ip = sh(script: 'docker inspect -f "{{ .NetworkSettings.IPAddress }}" '+container_id_prod, returnStdout: true).trim()
+                    echo container_id_prod
+                    echo container_ip
+                    
+                    sh '''
+                        export ANSIBLE_HOST_KEY_CHECKING=False
+                        ansible-playbook --private-key ./environments/prod/id_rsa -u root -i '''+container_ip+''', ./environments/prod/playbook.yml
+                        docker cp ./ROOT.war '''+container_id_prod+''':/var/lib/tomcat8/webapps/ROOT.war
+                    '''
+                    echo "Prod server: http://localhost:15900"
+                }
+            }
+        }
     }
-    
+
     post {
         always {
             sh '''
-                running_containers=`docker ps -a | grep '''+env.BRANCH_NAME+'''/* | awk '{print $1}'`
+                running_containers=`docker ps -a | grep ready/ | awk '{print $1}'`
                 if [ ! -z "$running_containers" ] ; then docker rm -f $running_containers ; fi
             '''
         }

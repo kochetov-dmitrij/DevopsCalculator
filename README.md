@@ -20,12 +20,12 @@
     - 4 for PostgreSQL
     - 6 for testing frontend with Selenium
 
-#### Provides environments (vagrant/ansible):
+#### Provides environments (Dockerfile + ansible):
 - dev
 - stage
 - prod
 
-#### [Integration server](https://github.com/kochetov-dmitrij/IntegrationServer) (GitLab, Jenkins)
+#### [Integration server](https://github.com/kochetov-dmitrij/IntegrationServer) (GitLab, Jenkins, Artifactory)
 
 #### Screenshot:
 ![Screenshot](https://media.discordapp.net/attachments/471031073556529171/691625995807227965/2020-03-23_15.33.55.png "Screenshot")

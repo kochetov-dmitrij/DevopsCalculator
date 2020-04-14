@@ -10,11 +10,9 @@
 - PostgreSQL (for storing history)
 
 #### How to run:
-```
-./mvnw clean package 
-./mvnw failsafe:integration-test -DskipTests=false
-sudo cp <project_dir>/target/calculator-web.war /var/lib/tomcat8/webapps/ROOT.war 
-```
+- Install Docker
+- `sh local_run.sh`
+- See logs and open http://localhost:16000
 
 #### Tests:
 - Unit tests: 20
@@ -24,7 +22,6 @@ sudo cp <project_dir>/target/calculator-web.war /var/lib/tomcat8/webapps/ROOT.wa
 
 #### Provides environments (vagrant/ansible):
 - dev
-- test
 - stage
 - prod
 

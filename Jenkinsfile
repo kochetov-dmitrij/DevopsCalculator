@@ -106,6 +106,7 @@ pipeline {
                         docker cp ./pom.xml '''+container_id_build+''':tmp
                         docker cp ./src/ '''+container_id_build+''':tmp
                         docker exec '''+container_id_build+''' bash -c 'cd /tmp/ ; ./mvnw clean package ; cp target/calculator-web-*.war ROOT.war'
+                        docker exec '''+container_id_build+''' bash -c 'cp /tmp/ROOT.war /var/lib/tomcat8/webapps/ROOT.war'
                         docker container cp '''+container_id_build+''':/tmp/ROOT.war ./ROOT.war
                         docker container cp '''+container_id_build+''':/tmp/target/surefire-reports/ ./surefire-reports/
                     '''

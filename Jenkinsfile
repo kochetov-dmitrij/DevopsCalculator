@@ -44,7 +44,7 @@ pipeline {
                     }
                     sh '''
                         old_container=`docker ps -a | grep '''+env.BRANCH_NAME+''' | awk '{print $1}'`
-                        if [ ! -z "$old_container" ] ; then docker rm -f $old_container ; fi
+                        if [ ! -z "$old_container" ] ; then docker rm -f $old_container || true ; fi
                     '''
                 }
             }
@@ -238,7 +238,7 @@ pipeline {
     post {
         always {
             sh '''
-                running_containers=`docker ps -a | grep ready/ | awk '{print $1}'`
+                running_containers=`docker ps -a | grep '''+env.BRANCH_NAME+'''/ | awk '{print $1}'`
                 if [ ! -z "$running_containers" ] ; then docker rm -f $running_containers ; fi
             '''
         }

@@ -238,8 +238,10 @@ pipeline {
     post {
         always {
             sh '''
-                running_containers=`docker ps -a | grep '''+env.BRANCH_NAME+'''/ | awk '{print $1}'`
-                if [ ! -z "$running_containers" ] ; then docker rm -f $running_containers ; fi
+                if [ "'''+env.BRANCH_NAME+'''" != "master" ] ; then
+                    running_containers=`docker ps -a | grep '''+env.BRANCH_NAME+'''/ | awk '{print $1}'`
+                    if [ ! -z "$running_containers" ] ; then docker rm -f $running_containers ; fi
+                fi
             '''
         }
     }

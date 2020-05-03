@@ -12,6 +12,7 @@ data/
 *.iml
 calculator-web.iml
 id_rsa
+id_rsa.pub
 
 # Logs and databases #
 ######################

@@ -11,7 +11,7 @@
 
 #### How to run:
 - Install Docker
-- `sh local_run.sh`
+- `sudo sh local_run.sh`
 - See logs and open http://localhost:16000
 
 #### Tests:

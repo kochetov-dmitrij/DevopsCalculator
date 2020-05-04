@@ -81,39 +81,41 @@ pipeline {
                 branch 'ready/*'
             }
             steps {
-                echo 'Building...'
                 script {
                     label = env.BRANCH_NAME + "/env-build"
-                    sh '''
+                    sh script: '''
                         cp /ssh/id_rsa ./environments/dev/
                         cp /ssh/id_rsa.pub ./environments/dev/
                         chmod 700 ./environments/dev/id_rsa
                         docker build -t '''+label+''' ./environments/dev
-                    '''
-                    container_id_build = sh(script: 'docker run -d -v data:/temp/ -p 15000-15999:8080 '+label, returnStdout: true).trim()
-                    container_ip = sh(script: 'docker inspect -f "{{ .NetworkSettings.IPAddress }}" '+container_id_build, returnStdout: true).trim()
-                    container_port = sh(script: '''docker inspect -f '{{ (index (index .NetworkSettings.Ports "8080/tcp") 0).HostPort }}' '''+container_id_build, returnStdout: true).trim()
-                    echo container_id_build
-                    echo container_ip
-                    echo container_port
+                    ''', label: "Build docker image for dev env"
                     
-                    sh '''
+                    container_id_build = sh(script: 'docker run -d -v data:/temp/ -p 15000-15999:8080 '+label, returnStdout: true, label: "Run docker container").trim()
+                    container_ip = sh(script: 'docker inspect -f "{{ .NetworkSettings.IPAddress }}" '+container_id_build, returnStdout: true, label: "Get docker container IP").trim()
+                    container_port = sh(script: '''docker inspect -f '{{ (index (index .NetworkSettings.Ports "8080/tcp") 0).HostPort }}' '''+container_id_build, returnStdout: true, label: "Get docker container port").trim()
+                    echo container_ip + ":" + container_port
+                    
+                    sh script: '''
                         export ANSIBLE_HOST_KEY_CHECKING=False
                         ansible-playbook --private-key ./environments/dev/id_rsa -u root -i '''+container_ip+''', ./environments/dev/playbook.yml
-                        
                         docker cp ./mvnw '''+container_id_build+''':tmp
                         docker cp ./.mvn/ '''+container_id_build+''':tmp
                         docker cp ./pom.xml '''+container_id_build+''':tmp
                         docker cp ./src/ '''+container_id_build+''':tmp
-                        docker exec '''+container_id_build+''' bash -c 'cd /tmp/ ; ./mvnw clean verify ; ./mvnw org.pitest:pitest-maven:mutationCoverage ; cp target/calculator-web-*.war ROOT.war'
+                    ''', label: "Build dev environmnet"
+                    
+                    sh script: '''    
+                        docker exec '''+container_id_build+''' bash -c 'cd /tmp/ ; ./mvnw clean verify ; ./mvnw org.pitest:pitest-maven:mutationCoverage ; cp target/calculator-web-*.war ROOT.war ; mkdir /var/lib/tomcat8/webapps/reports ; cp -r /tmp/target/site/jacoco/ /var/lib/tomcat8/webapps/reports/test-coverage ; cp -r /tmp/target/pit-reports/*/ /var/lib/tomcat8/webapps/reports/mutation'
                         docker exec '''+container_id_build+''' bash -c 'cp /tmp/ROOT.war /var/lib/tomcat8/webapps/ROOT.war'
                         docker container cp '''+container_id_build+''':/tmp/ROOT.war ./ROOT.war
                         docker container cp '''+container_id_build+''':/tmp/target/surefire-reports/ ./surefire-reports/
-                    '''
+                    ''', label: "Build the app, unit tests, test coverage, mutation tests"
                     junit '**/surefire-reports/*.xml'
-                    sh '''
+                    echo ">>> http://localhost:" + container_port + "/reports/test-coverage/"
+                    echo ">>> http://localhost:" + container_port + "/reports/mutation/"
+                    sh script: '''
                         rm -r ./surefire-reports/
-                    '''
+                    ''', label: "Clean up"
                 }
             }
         }
@@ -170,7 +172,7 @@ pipeline {
                 branch 'ready/*'
             }
             steps {
-                input "Do manual testing if needed. \nhttp://localhost:"+container_port+" \nRelease and push to master?"
+                input "Check test coverage and mutation reports in commit stage. \nDo manual testing if needed: \nhttp://localhost:"+container_port+" \nPush to master and release?"
                 sh '''#!/bin/bash
                     git fetch --no-tags --progress http://192.168.11.10/gitlab/devopser/devopscalculator +refs/heads/master:refs/remotes/origin/master 
                     master_hash_new=`git rev-parse origin/master`

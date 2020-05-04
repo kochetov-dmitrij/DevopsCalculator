@@ -12,7 +12,11 @@
 #### How to run:
 - Install Docker
 - `sudo sh local_run.sh`
-- See logs and open http://localhost:16000
+- See the logs: building of envs, building of app, unit/acceptance tests 
+- See reports: 
+  - http://localhost:16000/reports/test-coverage
+  - http://localhost:16000/reports/mutation
+- Open the app http://localhost:16000
 
 #### Tests:
 - Unit tests: 20
